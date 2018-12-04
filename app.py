@@ -1,7 +1,11 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, request, flash, url_for
+
+
+import mysql.connector as connector
+db = connector.connect(host="localhost", user="root", passwd="root", database="python")
 
 app = Flask(__name__)
-
+app.secret_key='gfhsagagahahaagag'
 
 @app.route('/main')
 def Home():
@@ -47,6 +51,34 @@ def url_data(age):
 def x(majina):
 
     return  majina.upper()
+
+# Newly introduced ones
+
+@app.route('/register', methods=['POST', 'GET'])
+def register():
+    if request.method == 'POST':
+        name = request.form["name"]
+        email = request.form["email"]
+        password = request.form["password"]
+        # print(name, email, password)
+        cursor = db.cursor()
+        sql = "INSERT INTO `users`( `name`, `email`, `password`) VALUES (%s,%s,%s)"
+        values =(name,email,password)
+        cursor.execute(sql,values)
+        db.commit()
+        flash('Saved Successfully')
+        return redirect(url_for('show'))
+
+
+    return render_template("form.html")
+
+@app.route('/show')
+def show():
+    cursor = db.cursor()
+    sql = "SELECT * FROM users"
+    cursor.execute(sql)
+    users = cursor.fetchall()
+    return render_template('show.html', users=users)
 
 
 @app.errorhandler(404)
