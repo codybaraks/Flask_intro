@@ -1,5 +1,5 @@
-from flask import Flask, render_template, redirect, request, flash, url_for
-
+from flask import Flask, render_template, redirect, request, flash, url_for,abort,session
+import os
 import mysql.connector as connector
 
 db = connector.connect(host="localhost", user="root", passwd="root", database="python")
@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.secret_key = 'fsadfgsgs45ys3564'
 
 
-@app.route('/home')
+@app.route('/')
 def Home():
     return render_template('Home.html')
 
@@ -26,6 +26,7 @@ def Team():
 @app.route('/connect')
 def Connect():
     return render_template('Connect.html')
+
 
 
 @app.route('/pass')
@@ -80,6 +81,22 @@ def register():
     return render_template("form.html")
 
 
+@app.route('/ses')
+def sessions():
+    if not session.get('logged_in'):
+        return render_template('login.html')
+    else:
+        return "Hello Boss!"
+
+
+@app.route('/login', methods=['POST'])
+def do_admin_login():
+    if request.form['password'] == 'password' and request.form['username'] == 'admin':
+        session['logged_in'] = True
+    else:
+        flash('wrong password!')
+    return sessions()
+
 @app.route('/show')
 def show():
     cursor = db.cursor()
@@ -96,3 +113,10 @@ def error_page(e):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+# users uid, names, email, password, role
+# borrowers bid, names, email, phone
+# books book_id, title, author, category, book_number
+# transactions tid, bid, date_borrowed, date_returned, expected_return_date, status
+# charges cid, date_charged, amount, status
+
